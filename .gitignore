@@ -9,4 +9,4 @@
 *.svg
 scratch.jl
 /Manifest.toml
-/src/data
+/src/data/two_echoes
