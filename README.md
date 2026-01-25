@@ -18,4 +18,4 @@ julia> fcVARPRO.generate_figures()
 
 ## Data availability
 
-The two-echo data have not been uploaded to the repository, but can provided at reasonable request.
+The two-echo data have not been uploaded to the repository, but can provided upon reasonable request.
