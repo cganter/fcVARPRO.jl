@@ -1,5 +1,10 @@
 # fcVARPRO
 
-Fully constrained (fc) variable projection (VARPRO) for water-fat models.
+*Fully constrained (fc) variable projection (VARPRO) for water-fat models.*
 
-[![Build Status](https://github.com/cganter/fcVARPRO.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/cganter/fcVARPRO.jl/actions/workflows/CI.yml?query=branch%3Amain)
+Julia code, used to generate the figures in:
+
+Carl Ganter, Jonathan Stelter, Dimitrios Karampinos, Oliver Bieri.\
+Fully-constrained variable projection for water-fat models.\
+[Journal details follow]
+

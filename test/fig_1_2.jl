@@ -1,4 +1,7 @@
-include("vp_util.jl")
+using Random, CairoMakie
+import fcVARPRO as FCV
+
+# include("vp_util.jl")
 
 # =============== MC simulation =======================
 
@@ -25,7 +28,7 @@ iR2st = 11
 R2ss_t = R2ss[iR2st]
 fs_t = [0.05]
 
-res_MC = MC_sim(;
+res_MC = FCV.MC_sim(;
     rng=rng,
     TEs=TEs,
     B0=B0,
