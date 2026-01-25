@@ -19,3 +19,8 @@ julia> fcVARPRO.generate_figures()
 ## Data availability
 
 The two-echo data have not been uploaded to the repository, but can provided upon reasonable request.
+
+## Remark
+
+The code is based upon the (registered) package [B0Map](https://github.com/cganter/B0Map.jl),
+which provides a full implementation of the water-fat VARPRO models.
