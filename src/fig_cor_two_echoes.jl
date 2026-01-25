@@ -5,7 +5,7 @@ import B0Map as BM
 BLAS.set_num_threads(1)
 
 # read the HDF5 file
-fid = h5open("src/data/two_echoes/20241024_171954_702_ImDataParamsBMRR_subspace2comp_wfi.h5", "r");
+fid = h5open("data/two_echoes/20241024_171954_702_ImDataParamsBMRR_subspace2comp_wfi.h5", "r");
 obj_data = read(fid["ImDataParams"]);
 
 signal = obj_data["signal"];

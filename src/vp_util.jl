@@ -2,6 +2,18 @@ using Statistics, Random, LaTeXStrings, CairoMakie, LinearAlgebra, MAT
 import VP4Optim as VP
 import B0Map as BM
 
+"""
+    generate_figures()
+
+Generate all figures in the article.
+"""
+function generate_figures()
+    include("src/fig_1_2.jl")
+    include("src/fig_ismrm_challenge_ds_17_sl_2.jl")
+    include("src/fig_ismrm_challenge_ds_14_sl_3.jl")
+    isdir("data/two_echoes") && include("src/fig_cor_two_echoes.jl")
+end
+
 # utility functions
 
 """
@@ -259,7 +271,7 @@ end
     greType::Type{<:BM.AbstractGREMultiEcho},
     fitopt::BM.FitOpt;
     data_set::Int,
-    ic_dir="test/data/ISMRM_challenge_2012/",
+    ic_dir="data/ISMRM_challenge_2012/",
     nTE=0)
     
 TBW
@@ -268,7 +280,7 @@ function ismrm_challenge(
     greType::Type{<:BM.AbstractGREMultiEcho},
     fitopt::BM.FitOpt;
     data_set::Int,
-    ic_dir="src/data/ISMRM_challenge_2012/",
+    ic_dir="data/ISMRM_challenge_2012/",
     nTE=0)
 
     # check that data set exists
