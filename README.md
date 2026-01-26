@@ -6,6 +6,8 @@ Carl Ganter, Jonathan Stelter, Dimitrios Karampinos, Oliver Bieri.\
 Fully-constrained variable projection for water-fat models.\
 [Journal details follow]
 
+[![DOI](https://zenodo.org/badge/1140093935.svg)](https://doi.org/10.5281/zenodo.18377775)
+
 ## How to use
 
 - Clone, activate (and instantiate) the repository at https://github.com/cganter/fcVARPRO.jl.
