@@ -14,8 +14,10 @@ ampl_fat = [0.0875, 0.6998, 0.1206, 0.0062, 0.0389, 0.0471]
 
 rng = MersenneTwister(42)
 nTE = 2
-t0 = 1.25Δt_opp # 1.02
-ΔTE = 1.25Δt_opp # 1.07
+#t0 = 1.25Δt_opp # 1.02
+#ΔTE = 1.25Δt_opp # 1.07
+t0 = 1.02
+ΔTE = 1.07
 TEs = t0 .+ [ΔTE .* (0:nTE-1);]
 c_t = randn(rng, ComplexF64)
 c_t /= abs(c_t)
@@ -224,10 +226,10 @@ display(f_χ2)
 
 #fig_name = "fig_1"
 #save(fig_name * ".svg", f_χ2)
-#run(`/home/cganter/bin/svg2eps $fig_name`)
+#save(fig_name * ".eps", f_χ2)
 #run(`epspdf $fig_name".eps"`)
 
 #fig_name = "fig_2"
 #save(fig_name * ".svg", f_f)
-#run(`/home/cganter/bin/svg2eps $fig_name`)
+#save(fig_name * ".eps", f_f)
 #run(`epspdf $fig_name".eps"`)

@@ -186,5 +186,5 @@ display(fig)
 
 #fig_name = "fig_5"
 #save(fig_name * ".svg", fig)
-#run(`/home/cganter/bin/svg2eps $fig_name`)
+#save(fig_name * ".eps", fig)
 #run(`epspdf $fig_name".eps"`)
