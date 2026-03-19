@@ -14,21 +14,19 @@ ampl_fat = [0.0875, 0.6998, 0.1206, 0.0062, 0.0389, 0.0471]
 
 rng = MersenneTwister(42)
 nTE = 2
-#t0 = 1.25Δt_opp # 1.02
-#ΔTE = 1.25Δt_opp # 1.07
 t0 = 1.02
 ΔTE = 1.07
 TEs = t0 .+ [ΔTE .* (0:nTE-1);]
 c_t = randn(rng, ComplexF64)
 c_t /= abs(c_t)
-σ = 0.05
+σ = 0.00
 n_σ = 1
 ϕs = [range(-π, π, 361);]
-R2ss = [range(0, 1, 101);]
+R2ss = [range(0, 1.5, 101);]
 ϕ_t = 0
 iR2st = 11
-R2ss_t = R2ss[iR2st]
-fs_t = [0.05]
+R2ss_t = 0.05
+fs_t = [0.02]
 
 res_MC = FCV.MC_sim(;
     rng=rng,
@@ -84,7 +82,7 @@ ax = Axis(f_f[1, 1],
 
 heatmap!(ax, ϕs, R2ss, f_RW, colormap=colmap, colorrange=(0, 1))
 scatter!(ax, xs, ys, markersize = 2, color=:red)
-scatter!(ax, 0.0, R2ss_t, color=:lime)
+scatter!(ax, 0.0, R2ss_t, markersize = 4, color=:lime)
 Label(f_f[1, 1, BottomLeft()], "A",
     font=:bold,
     padding=(0, -10, -30, 0),
@@ -100,7 +98,7 @@ ax = Axis(f_f[1, 2],
 
 heatmap!(ax, ϕs, R2ss, f_FC, colormap=colmap, colorrange=(0, 1))
 scatter!(ax, xs, ys, markersize = 2, color=:red)
-scatter!(ax, 0.0, R2ss_t, color=:lime)
+scatter!(ax, 0.0, R2ss_t, markersize = 4, color=:lime)
 hideydecorations!(ax)
 Label(f_f[1, 2, BottomLeft()], "B",
     font=:bold,
@@ -124,7 +122,7 @@ ax = Axis(f_f[1, 4],
 lim = (min(la_Δf...), max(la_Δf...))
 heatmap!(ax, ϕs, R2ss, la_Δf, colormap=colmap, colorrange=lim)
 scatter!(ax, xs, ys, markersize = 2, color=:red)
-scatter!(ax, 0.0, R2ss_t, color=:lime)
+scatter!(ax, 0.0, R2ss_t, markersize = 4, color=:lime)
 hideydecorations!(ax)
 Label(f_f[1, 4, BottomLeft()], "C",
     font=:bold,
@@ -152,7 +150,7 @@ laχ2_FC = log10.(abs.(χ2_FC) .+ eps())
 laχ2_RW = log10.(abs.(χ2_RW) .+ eps())
 laχ2_RW_FC = log10.(abs.(χ2_RW .- χ2_FC) .+ eps())
 
-lim = (0.6min(laχ2_FC..., laχ2_RW...), 0.8max(laχ2_FC..., laχ2_RW...))
+lim = (0.5min(laχ2_FC..., laχ2_RW...), 0.8max(laχ2_FC..., laχ2_RW...))
 
 ax = Axis(f_χ2[1, 1],
     title=L"$\log_{10}\,\chi^2_{RW}$",
@@ -166,7 +164,7 @@ ax = Axis(f_χ2[1, 1],
 
 heatmap!(ax, ϕs, R2ss, laχ2_RW, colormap=colmap, colorrange=lim)
 scatter!(ax, xs, ys, markersize = 2, color=:red)
-scatter!(ax, 0.0, R2ss_t, color=:lime)
+scatter!(ax, 0.0, R2ss_t, markersize = 4, color=:lime)
 Label(f_χ2[1, 1, BottomLeft()], "A",
     font=:bold,
     padding=(0, -10, -30, 0),
@@ -182,7 +180,7 @@ ax = Axis(f_χ2[1, 2],
 
 heatmap!(ax, ϕs, R2ss, laχ2_FC, colormap=colmap, colorrange=lim)
 scatter!(ax, xs, ys, markersize = 2, color=:red)
-scatter!(ax, 0.0, R2ss_t, color=:lime)
+scatter!(ax, 0.0, R2ss_t, markersize = 4, color=:lime)
 hideydecorations!(ax)
 Label(f_χ2[1, 2, BottomLeft()], "B",
     font=:bold,
@@ -207,7 +205,7 @@ lim = (min(laχ2_RW_FC...), max(laχ2_RW_FC...))
 
 heatmap!(ax, ϕs, R2ss, laχ2_RW_FC, colormap=colmap, colorrange=lim)
 scatter!(ax, xs, ys, markersize = 2, color=:red)
-scatter!(ax, 0.0, R2ss_t, color=:lime)
+scatter!(ax, 0.0, R2ss_t, markersize = 4, color=:lime)
 hideydecorations!(ax)
 Label(f_χ2[1, 4, BottomLeft()], "C",
     font=:bold,
@@ -224,12 +222,12 @@ display(f_χ2)
 
 ##
 
-#fig_name = "fig_1"
-#save(fig_name * ".svg", f_χ2)
-#save(fig_name * ".eps", f_χ2)
-#run(`epspdf $fig_name".eps"`)
+fig_name = "fig_S1"
+save(fig_name * ".svg", f_χ2)
+save(fig_name * ".eps", f_χ2)
+run(`epspdf $fig_name".eps"`)
 
-#fig_name = "fig_2"
-#save(fig_name * ".svg", f_f)
-#save(fig_name * ".eps", f_f)
-#run(`epspdf $fig_name".eps"`)
+fig_name = "fig_S2"
+save(fig_name * ".svg", f_f)
+save(fig_name * ".eps", f_f)
+run(`epspdf $fig_name".eps"`)

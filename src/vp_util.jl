@@ -1,4 +1,4 @@
-using Statistics, Random, LaTeXStrings, CairoMakie, LinearAlgebra, MAT
+using Statistics, Random, LaTeXStrings, CairoMakie, LinearAlgebra, MAT, Revise
 import VP4Optim as VP
 import B0Map as BM
 
@@ -8,10 +8,11 @@ import B0Map as BM
 Generate all figures in the article.
 """
 function generate_figures()
-    include("src/fig_1_2.jl")
-    include("src/fig_ismrm_challenge_ds_17_sl_2.jl")
+    include("src/fig_S1_S2.jl")
     include("src/fig_ismrm_challenge_ds_14_sl_3.jl")
+    include("src/fig_chi2_two_echoes.jl")
     isdir("data/two_echoes") && include("src/fig_cor_two_echoes.jl")
+    isdir("data/three_echoes") && include("src/fig_cor_three_echoes.jl")
 end
 
 # utility functions
@@ -315,6 +316,53 @@ function ismrm_challenge(
     copy!(data, reshape(datPar["images"][:, :, :, 1, 1:nTE], Nρ..., nTE))
     data ./= max(abs.(data)...)
     S = datPar["eval_mask"] .!= 0.0
+
+    # generate instance of FitPar
+    fitpar = BM.fitPar(grePar, data, S)
+
+    # if ϕ_scale ≠ 1, we need this
+    BM.set_num_phase_intervals(fitpar, fitopt, fitopt.n_ϕ)
+
+    # do the work
+    BM.local_fit!(fitpar, fitopt)
+
+    # return results
+    return (; fitpar)
+end
+
+function three_echoes(
+    greType::Type{<:BM.AbstractGREMultiEcho},
+    fitopt::BM.FitOpt;
+    data_set,
+    thresh = 25,
+    slice = 37)
+
+    # 10-peak bone marrow model
+    ppm_fat = [-3.8, -3.4, -3.1, -2.68, -2.46, -1.95, -0.5, 0.49, 0.59]
+    ampl_fat = [0.0899, 0.5834, 0.0599, 0.0849, 0.0599, 0.0150, 0.0400, 0.01, 0.0569]
+
+    file_str = "data/three_echoes/20151101_" * data_set * "_ImDataParams.mat"
+
+    datPar = matread(file_str)["ImDataParams"]
+    
+    TEs = 1000.0 * datPar["TE_s"][:]
+    nTE = length(TEs)
+    B0 = datPar["fieldStrength_T"]
+    precession = (datPar["precessionIsClockwise"] != 1.0) ? :clockwise : :counterclockwise
+
+    # set up GRE sequence model
+    grePar = VP.modpar(greType;
+        ts=TEs,
+        B0=B0,
+        ppm_fat=ppm_fat,
+        ampl_fat=ampl_fat,
+        precession=precession)
+
+    # read data and mask
+    Nρ = size(datPar["signal"])[1:2]
+    data = zeros(ComplexF64, Nρ..., nTE)
+    copy!(data, datPar["signal"][:,:,slice,:])
+    S = reshape(maximum(abs.(data), dims=3) .> thresh, Nρ...)
 
     # generate instance of FitPar
     fitpar = BM.fitPar(grePar, data, S)

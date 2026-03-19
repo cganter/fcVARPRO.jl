@@ -184,7 +184,7 @@ display(fig)
 
 ##
 
-#fig_name = "fig_5"
+#fig_name = "fig_3"
 #save(fig_name * ".svg", fig)
 #save(fig_name * ".eps", fig)
 #run(`epspdf $fig_name".eps"`)
