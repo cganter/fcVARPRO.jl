@@ -34,7 +34,7 @@ Generate all figures in the article.
 function generate_figures()
     include("src/fig_1.jl")
     isdir("data/three_echoes") && include("src/fig_2.jl")
-    isdir("data/two_echoes") && include("src/fig_3_4_S1.jl")
+    isdir("data/two_echoes") && include("src/fig_3_4.jl")
     (isdir("data/two_echoes") && isdir("data/three_echoes")) && include("src/fig_5.jl")
 end
 
