@@ -2,17 +2,40 @@ using Statistics, Random, LaTeXStrings, CairoMakie, LinearAlgebra, MAT, Revise
 import VP4Optim as VP
 import B0Map as BM
 
+
+"""
+    rc2xy(r, c, Mat, t = x -> x)
+
+Convert row and column index to xy coordinates.
+
+# Remarks
+- Purpose: Determine, where `scatter` can generate a point in a `heatmap`
+- Allows for transformation `t` (such as `rotl90`, `rotr90` or `rot180`) of Matrix `Mat` in `heatmap`.
+- Returns tuple `(x, y)`
+
+# Arguments
+- `r`: Row index
+- `c`: Column index
+- `Mat`: Matrix
+- `t`: Transformation operator (default: do nothing)
+"""
+function rc2xy(r, c, Mat, t = x -> x)
+    S = falses(size(Mat))
+    S[r, c] = true
+    tS = t(S)
+    return Tuple(findall(tS)...)
+end
+
 """
     generate_figures()
 
 Generate all figures in the article.
 """
 function generate_figures()
-    include("src/fig_S1_S2.jl")
-    include("src/fig_ismrm_challenge_ds_14_sl_3.jl")
-    include("src/fig_chi2_two_echoes.jl")
-    isdir("data/two_echoes") && include("src/fig_cor_two_echoes.jl")
-    isdir("data/three_echoes") && include("src/fig_cor_three_echoes.jl")
+    include("src/fig_1.jl")
+    isdir("data/three_echoes") && include("src/fig_2.jl")
+    isdir("data/two_echoes") && include("src/fig_3_4_S1.jl")
+    (isdir("data/two_echoes") && isdir("data/three_echoes")) && include("src/fig_5.jl")
 end
 
 # utility functions
@@ -267,6 +290,78 @@ function MC_sim(;
     end
 end
 
+function fit_data_loc(;
+    TEs,
+    B0,
+    ppm_fat=[-3.80, -3.40, -2.60, -1.95, -0.5, 0.60],
+    ampl_fat=[0.0875, 0.6998, 0.1206, 0.0062, 0.0389, 0.0471],
+    data,
+    ϕs,
+    R2ss,
+)
+    # finetune fat model amplitudes
+    ampl_fat /= sum(ampl_fat)
+    @assert all(ampl_fat .> 0) && sum(ampl_fat) ≈ 1
+
+    # generate GRE models
+    gre_info = set_up_GREs(;
+        TEs=TEs,
+        B0=B0,
+        ppm_fat=ppm_fat,
+        ampl_fat=ampl_fat,
+    )
+
+    gre = gre_info.gre
+
+    n_ϕ, n_R2s = length(ϕs), length(R2ss)
+
+    χ2 = Dict()
+    f = Dict()
+    ϕ_min = Dict()
+    R2s_min = Dict()
+    f_min = Dict()
+
+    for m in keys(gre)
+        χ2[m] = Matrix{Float64}(undef, n_ϕ, n_R2s)
+        f[m] = Matrix{Float64}(undef, n_ϕ, n_R2s)
+    end
+
+    wf_par = Matrix{Bool}(undef, n_ϕ, n_R2s)
+    wf_opp = Matrix{Bool}(undef, n_ϕ, n_R2s)
+
+    for m in keys(gre)
+        VP.set_data!(gre[m], deepcopy(data))
+    end
+
+    for (iϕ, ϕ) in enumerate(ϕs)
+        for (iR2s, R2s) in enumerate(R2ss)
+            for m in keys(gre)
+                VP.x!(gre[m], [ϕ, R2s])
+                χ2[m][iϕ, iR2s] = VP.χ2(gre[m])
+                f[m][iϕ, iR2s] = BM.fat_fraction(gre[m])
+            end
+
+            c = VP.c(gre[:RW])
+            wf_par[iϕ, iR2s] = c[1] * c[2] ≥ 0
+            wf_opp[iϕ, iR2s] = !wf_par[iϕ, iR2s]
+        end
+    end
+
+    for m in keys(gre)
+        argmin_χ2 = argmin(χ2[m])
+
+        ϕ_min[m] = ϕs[argmin_χ2[1]]
+        R2s_min[m] = R2ss[argmin_χ2[2]]
+        f_min[m] = f[m][argmin_χ2]
+    end
+
+    (; χ2, f, wf_par, wf_opp,
+        ϕ_min, 
+        R2s_min, 
+        f_min, 
+    )
+end
+
 """
     ismrm_challenge(
     greType::Type{<:BM.AbstractGREMultiEcho},
@@ -334,8 +429,8 @@ function three_echoes(
     greType::Type{<:BM.AbstractGREMultiEcho},
     fitopt::BM.FitOpt;
     data_set,
-    thresh = 25,
-    slice = 37)
+    thresh=25,
+    slice=37)
 
     # 10-peak bone marrow model
     ppm_fat = [-3.8, -3.4, -3.1, -2.68, -2.46, -1.95, -0.5, 0.49, 0.59]
@@ -344,7 +439,7 @@ function three_echoes(
     file_str = "data/three_echoes/20151101_" * data_set * "_ImDataParams.mat"
 
     datPar = matread(file_str)["ImDataParams"]
-    
+
     TEs = 1000.0 * datPar["TE_s"][:]
     nTE = length(TEs)
     B0 = datPar["fieldStrength_T"]
@@ -361,7 +456,7 @@ function three_echoes(
     # read data and mask
     Nρ = size(datPar["signal"])[1:2]
     data = zeros(ComplexF64, Nρ..., nTE)
-    copy!(data, datPar["signal"][:,:,slice,:])
+    copy!(data, datPar["signal"][:, :, slice, :])
     S = reshape(maximum(abs.(data), dims=3) .> thresh, Nρ...)
 
     # generate instance of FitPar

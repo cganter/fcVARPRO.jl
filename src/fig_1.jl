@@ -1,66 +1,66 @@
-using MAT, CairoMakie, LinearAlgebra, Revise
+using MAT, CairoMakie, LinearAlgebra
 import VP4Optim as VP
 import B0Map as BM
 import fcVARPRO as FCV
 
 BLAS.set_num_threads(1)
 
-# coronal three-echo dataset
+# ISMRM challenge 2012 data sets:
 
-# threshold for mask
-sl = 37
-R2s_max = 5.0
-optim = true
-#thresh, data_set = 25, "151725_0302"
-thresh, data_set = 70, "171032_0302"
-#thresh, data_set = 60, "183316_0202"
+# 1: tibia, tra
+# 2: upper body, cor
+# 3: foot, sag
+# 4: knee, sag
+# 5: 2 lower legs, tra
+# 6: 2 lower legs, tra
+# 7: foot, sag
+# 8: thorax, tra (strong gradient)
+# 9: head, cor (strong gradient)
+# 10: hand, cor
+# 11: liver, lung, spleen, tra
+# 12: liver, lung, tra
+# 13: thorax, tra (motion artifacts)
+# 14: head & shoulders, cor
+# 15: breast, tra (strong gradient)
+# 16: torso, sag
+# 17: shoulder, cor
+
+data_set = 14
+sl = 3
 
 # local fit
 fitopt_FW = BM.fitOpt()
-fitopt_FW.R2s_rng = [0.0, R2s_max]
-fitopt_FW.optim = optim
-@time res_FW = FCV.three_echoes(BM.GREMultiEchoWFFW, fitopt_FW; data_set=data_set, thresh=thresh, slice=sl);
-
+@time res_FW = FCV.ismrm_challenge(BM.GREMultiEchoWFFW, fitopt_FW; data_set = data_set);
 fitopt_RW = BM.fitOpt()
-fitopt_RW.R2s_rng = [0.0, R2s_max]
-fitopt_RW.optim = optim
-@time res_RW = FCV.three_echoes(BM.GREMultiEchoWFRW, fitopt_RW; data_set=data_set, thresh=thresh, slice=sl);
-
+@time res_RW = FCV.ismrm_challenge(BM.GREMultiEchoWFRW, fitopt_RW; data_set = data_set);
 fitopt_FC = BM.fitOpt()
-fitopt_FC.R2s_rng = [0.0, R2s_max]
-fitopt_FC.optim = optim
-@time res_FC = FCV.three_echoes(BM.GREMultiEchoWF, fitopt_FC; data_set=data_set, thresh=thresh, slice=sl);
+@time res_FC = FCV.ismrm_challenge(BM.GREMultiEchoWF, fitopt_FC; data_set = data_set);
 
-##
-
-not_S = (!).(res_FW.fitpar.S)
+not_S = (!).(res_FW.fitpar.S[:,:,sl])
 
 # extract maps
-ϕ_FW = res_FW.fitpar.ϕ#[:,:,sl]
+ϕ_FW = res_FW.fitpar.ϕ[:,:,sl]
 ϕ_FW[not_S] .= NaN
-f_FW = BM.fat_fraction_map(res_FW.fitpar, fitopt_FW)#[:,:,sl]
+f_FW = BM.fat_fraction_map(res_FW.fitpar, fitopt_FW)[:,:,sl]
 f_FW[not_S] .= NaN
-T2s_FW = 1 ./ res_FW.fitpar.R2s#[:,:,sl]
-
-ϕ_RW = res_RW.fitpar.ϕ#[:,:,sl]
-ϕ_RW[not_S] .= NaN
-f_RW = BM.fat_fraction_map(res_RW.fitpar, fitopt_RW)#[:,:,sl]
-f_RW[not_S] .= NaN
-T2s_RW = 1 ./ res_RW.fitpar.R2s#[:,:,sl]
-
-ϕ_FC = res_FC.fitpar.ϕ#[:,:,sl]
-ϕ_FC[not_S] .= NaN
-f_FC = BM.fat_fraction_map(res_FC.fitpar, fitopt_FC)#[:,:,sl]
-f_FC[not_S] .= NaN
-T2s_FC = 1 ./ res_FC.fitpar.R2s#[:,:,sl]
-
+T2s_FW = 1 ./ res_FW.fitpar.R2s[:,:,sl]
 T2s_FW[not_S] .= NaN
+
+ϕ_RW = res_RW.fitpar.ϕ[:,:,sl]
+ϕ_RW[not_S] .= NaN
+f_RW = BM.fat_fraction_map(res_RW.fitpar, fitopt_RW)[:,:,sl]
+f_RW[not_S] .= NaN
+T2s_RW = 1 ./ res_RW.fitpar.R2s[:,:,sl]
 T2s_RW[not_S] .= NaN
+
+ϕ_FC = res_FC.fitpar.ϕ[:,:,sl]
+ϕ_FC[not_S] .= NaN
+f_FC = BM.fat_fraction_map(res_FC.fitpar, fitopt_FC)[:,:,sl]
+f_FC[not_S] .= NaN
+T2s_FC = 1 ./ res_FC.fitpar.R2s[:,:,sl]
 T2s_FC[not_S] .= NaN
 
 ## =============== generate phase maps =======================
-
-T2s_min, T2s_max = 0.0, 100.0
 
 # size definitions
 # these are relative to 1 CSS px
@@ -88,6 +88,12 @@ Label(fig[1, 1, TopLeft()], "A",
     padding=(0, -20, 5, 0),
     halign=:right)
 
+arrows2d!([32],[18],[0],[20],color=:lime)
+arrows2d!([230],[120],[0],[-20],color=:lime)
+arrows2d!([105],[40],[0],[15],color=:white)
+arrows2d!([164],[38],[0],[15],color=:white)
+arrows2d!([248],[5],[0],[20],color=:red)
+
 ax = Axis(fig[1, 2],
     title=L"$\varphi_{RW}$",
 )
@@ -104,6 +110,12 @@ Label(fig[1, 2, TopLeft()], "B",
     padding=(0, -20, 5, 0),
     halign=:right)
 
+arrows2d!([105],[40],[0],[15],color=:white)
+arrows2d!([164],[38],[0],[15],color=:white)
+arrows2d!([68],[115],[15],[-8],color=:orange)
+arrows2d!([195],[115],[-15],[-8],color=:orange)
+arrows2d!([248],[5],[0],[20],color=:red)
+
 ax = Axis(fig[1, 3],
     title=L"$\varphi_{FC}$",
 )
@@ -119,6 +131,8 @@ Label(fig[1, 3, TopLeft()], "C",
     font=:bold,
     padding=(0, -20, 5, 0),
     halign=:right)
+
+arrows2d!([248],[5],[0],[20],color=:red)
 
 Colorbar(fig[1, 4],
     colorrange=(-π, π),
@@ -147,6 +161,12 @@ Label(fig[2, 1, TopLeft()], "D",
     padding=(0, -20, 5, 0),
     halign=:right)
 
+arrows2d!([32],[18],[0],[20],color=:lime)
+arrows2d!([230],[120],[0],[-20],color=:lime)
+arrows2d!([105],[40],[0],[15],color=:white)
+arrows2d!([164],[38],[0],[15],color=:white)
+arrows2d!([248],[5],[0],[20],color=:red)
+
 ax = Axis(fig[2, 2],
     title=L"$f_{RW}$",
 )
@@ -162,6 +182,12 @@ Label(fig[2, 2, TopLeft()], "E",
     font=:bold,
     padding=(0, -20, 5, 0),
     halign=:right)
+
+arrows2d!([105],[40],[0],[15],color=:white)
+arrows2d!([164],[38],[0],[15],color=:white)
+arrows2d!([68],[115],[15],[-8],color=:orange)
+arrows2d!([195],[115],[-15],[-8],color=:orange)
+arrows2d!([248],[5],[0],[20],color=:red)
 
 ax = Axis(fig[2, 3],
     title=L"$f_{FC}$",
@@ -180,15 +206,18 @@ Label(fig[2, 3, TopLeft()], "F",
     padding=(0, -20, 5, 0),
     halign=:right)
 
+arrows2d!([248],[5],[0],[20],color=:red)
+
 Colorbar(fig[2, 4],
     colorrange=(0, 1),
     colormap=colmap,
     ticklabelsize=8pt,
 )
 
-# =============== generate R2* maps =======================
+# =============== generate T2* maps =======================
 
 colmap = :batlow
+T2s_max = 100
 
 ax = Axis(fig[3, 1],
     title=L"$T^\ast_{2,FW}$",
@@ -196,7 +225,7 @@ ax = Axis(fig[3, 1],
 
 heatmap!(ax,
     rotr90(T2s_FW),
-    colorrange=(T2s_min, T2s_max),
+    colorrange=(0,T2s_max),
     colormap=colmap,
     nan_color=:black,
 )
@@ -206,13 +235,19 @@ Label(fig[3, 1, TopLeft()], "G",
     padding=(0, -20, 5, 0),
     halign=:right)
 
+arrows2d!([32],[18],[0],[20],color=:lime)
+arrows2d!([230],[120],[0],[-20],color=:lime)
+arrows2d!([105],[40],[0],[15],color=:white)
+arrows2d!([164],[38],[0],[15],color=:white)
+arrows2d!([248],[5],[0],[20],color=:red)
+
 ax = Axis(fig[3, 2],
     title=L"$T^\ast_{2,RW}$",
 )
 
 heatmap!(ax,
     rotr90(T2s_RW),
-    colorrange=(T2s_min, T2s_max),
+    colorrange=(0,T2s_max),
     colormap=colmap,
     nan_color=:black,
 )
@@ -222,13 +257,19 @@ Label(fig[3, 2, TopLeft()], "H",
     padding=(0, -20, 5, 0),
     halign=:right)
 
+arrows2d!([105],[40],[0],[15],color=:white)
+arrows2d!([164],[38],[0],[15],color=:white)
+arrows2d!([68],[115],[15],[-8],color=:orange)
+arrows2d!([195],[115],[-15],[-8],color=:orange)
+arrows2d!([248],[5],[0],[20],color=:red)
+
 ax = Axis(fig[3, 3],
     title=L"$T^\ast_{2,FC}$",
 )
 
 heatmap!(ax,
     rotr90(T2s_FC),
-    colorrange=(T2s_min, T2s_max),
+    colorrange=(0,T2s_max),
     colormap=colmap,
     nan_color=:black,
 )
@@ -239,8 +280,10 @@ Label(fig[3, 3, TopLeft()], "I",
     padding=(0, -20, 5, 0),
     halign=:right)
 
+arrows2d!([248],[5],[0],[20],color=:red)
+
 Colorbar(fig[3, 4],
-    colorrange=(T2s_min, T2s_max),
+    colorrange=(0,T2s_max),
     colormap=colmap,
     ticklabelsize=8pt,
 )
@@ -249,7 +292,13 @@ display(fig)
 
 ##
 
-fig_name = "fig_2"
+wf_par_4e = map(x -> x[1] * x[2] < 0 ? 1.0 : 0.0, res_RW.fitpar.c[:,:,sl])
+wf_par_4e[not_S] .= NaN
+t_4e = rotr90
+
+##
+
+fig_name = "fig_1"
 save(fig_name * ".svg", fig)
 save(fig_name * ".eps", fig)
 run(`epspdf $fig_name".eps"`)
