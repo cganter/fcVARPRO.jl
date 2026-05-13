@@ -2,11 +2,11 @@
 
 Julia code, used to generate the figures in:
 
-Carl Ganter, Jonathan Stelter, Dimitrios Karampinos, Oliver Bieri.\
+Carl Ganter, Jonathan Stelter, Louis Peyratoux, Dimitrios C. Karampinos, Oliver Bieri.\
 Fully-constrained variable projection for water-fat models.\
-[Journal details follow]
+[DOI](http://dx.doi.org/10.1002/mrm.70428)
 
-[![DOI](https://zenodo.org/badge/1140093935.svg)](https://doi.org/10.5281/zenodo.18377775)
+[![zenodo](https://zenodo.org/badge/1140093935.svg)](https://doi.org/10.5281/zenodo.18377775)
 
 ## How to use
 
